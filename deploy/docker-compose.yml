@@ -1,0 +1,44 @@
+version: "3.8"
+
+services:
+  # app:
+  #   build: .
+  #   container_name: pill_tracker_app
+  #   ports:
+  #     - "8000:8000"
+  #   depends_on:
+  #     - db
+  #     - notifier
+  #   environment:
+  #     - DATABASE_URL=postgresql+psycopg2://postgres:postgres@db:5432/pill_tracker
+  #     - TELEGRAM_TOKEN=your_bot_token
+  #     - TELEGRAM_CHAT_ID=your_chat_id
+  #   command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+  db:
+    image: postgres:15
+    container_name: pill_tracker_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: pill_tracker
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # notifier:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.notifier
+  #   container_name: pill_tracker_notifier
+  #   depends_on:
+  #     - db
+  #   environment:
+  #     - DATABASE_URL=postgresql+psycopg2://postgres:postgres@db:5432/pill_tracker
+  #     - TELEGRAM_TOKEN=your_bot_token
+  #     - TELEGRAM_CHAT_ID=your_chat_id
+  #   command: python notifier.py
+
+volumes:
+  postgres_data:
