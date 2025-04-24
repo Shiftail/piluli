@@ -1,8 +1,24 @@
 version: "3.8"
 
 services:
+  Drugsdb:
+      container_name: "Drugsdb"
+      image: postgres:14.1-alpine
+      restart : always
+      environment:
+        POSTGRES_PASSWORD: drugsdb
+        POSTGRES_USER: drugsdb
+        POSTGRES_DB: drugsdb
+      ports:
+        - "5432:5432"
+      networks:
+        - custom
+      healthcheck:
+        test: ["CMD", "pg_isready", "-U", "drugsdb", "-d", "drugsdb", "-h", "localhost", "-p", "5432"]
+        interval: 5s
+        retries: 5
   Userdb:
-    container_name: "userdb"
+    container_name: "Userdb"
     image: postgres:14.1-alpine
     restart : always
     environment:
@@ -34,6 +50,21 @@ services:
       - custom
     depends_on:
       Userdb:
+        condition: service_healthy
+  drug-service:
+    build:
+      context: ../Backend/MedicineService
+      dockerfile: ./Dockerfile
+    env_file:
+    - .env
+    environment:
+      POSTGRES_DSN: ${POSTGRES_DSN_DRUG}
+    ports:
+      - "5000:5000"
+    networks:
+      - custom
+    depends_on:
+      Drugsdb:
         condition: service_healthy
 networks:
   custom:
