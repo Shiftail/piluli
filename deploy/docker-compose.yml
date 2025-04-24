@@ -1,6 +1,13 @@
 version: "3.8"
 
 services:
+  redis:
+    image: redis:alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - custom
   Drugsdb:
       container_name: "Drugsdb"
       image: postgres:14.1-alpine
@@ -97,6 +104,17 @@ services:
     depends_on:
       Drugsdb:
         condition: service_healthy
+  notification-service:
+    build:
+      context: ../Backend/NotificationService
+      dockerfile: ./Dockerfile
+    container_name: NotificationService
+    depends_on:
+      - redis
+      - Schedulingdb
+      - Userdb
+    networks:
+      - custom
 networks:
   custom:
     driver: bridge
