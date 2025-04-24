@@ -6,6 +6,9 @@ from typing import Optional
 class UserRead(schemas.BaseUser[uuid.UUID]):
     username: str
     email: str
+    gender: bool
+    age: int
+    tg_id: int
     time_zone: int = Field(default=0, ge=-12, le=14)
     is_active: bool = True
     is_superuser: bool = False
@@ -19,6 +22,9 @@ class UserCreate(schemas.BaseUserCreate):
     username: str
     email: str
     password: str
+    gender: bool
+    age: int
+    tg_id: int
     time_zone: int = Field(default=0, ge=-12, le=14)
     is_active: Optional[bool] = True
     is_superuser: Optional[bool] = False
@@ -29,6 +35,9 @@ class UserUpdate(schemas.BaseUserUpdate):
     username: str
     email: str
     password: str
+    gender: bool
+    age: int
+    tg_id: int
     time_zone: int | None = Field(default=None, ge=-12, le=14)
     is_active: Optional[bool] = True
     is_superuser: Optional[bool] = False

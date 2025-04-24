@@ -17,6 +17,22 @@ services:
         test: ["CMD", "pg_isready", "-U", "drugsdb", "-d", "drugsdb", "-h", "localhost", "-p", "5432"]
         interval: 5s
         retries: 5
+  Schedulingdb:
+      container_name: "Schedulingdb"
+      image: postgres:14.1-alpine
+      restart : always
+      environment:
+        POSTGRES_PASSWORD: schedulingdb
+        POSTGRES_USER: schedulingdb
+        POSTGRES_DB: schedulingdb
+      ports:
+        - "5430:5432"
+      networks:
+        - custom
+      healthcheck:
+        test: ["CMD", "pg_isready", "-U", "schedulingdb", "-d", "schedulingdb", "-h", "localhost", "-p", "5432"]
+        interval: 5s
+        retries: 5
   Userdb:
     container_name: "Userdb"
     image: postgres:14.1-alpine
@@ -50,6 +66,21 @@ services:
       - custom
     depends_on:
       Userdb:
+        condition: service_healthy
+  scheduling-service:
+    build:
+      context: ../Backend/SchedulingService
+      dockerfile: ./Dockerfile
+    env_file:
+    - .env
+    environment:
+      POSTGRES_DSN: ${POSTGRES_DSN_SCHEDULING}
+    ports:
+      - "5001:5001"
+    networks:
+      - custom
+    depends_on:
+      Schedulingdb:
         condition: service_healthy
   drug-service:
     build:
