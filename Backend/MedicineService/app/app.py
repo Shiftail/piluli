@@ -8,7 +8,7 @@ from . import config
 import typing
 import uuid
 from fastapi.logger import logger
-
+from fastapi.middleware.cors import CORSMiddleware
 cfg: config.Config = config.load_config()
 
 # init database
@@ -20,7 +20,13 @@ app = FastAPI(
     version='0.0.1',
     title='Drugs Management Service'
 )
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"], # Allows all methods
+    allow_headers=["*"], # Allows all headers
+)
 def get_db():
     db = SessionLocal()
     try:
