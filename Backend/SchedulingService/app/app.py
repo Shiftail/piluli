@@ -50,6 +50,13 @@ async def get_schedule_info(schedule_id: uuid.UUID, db: Session = Depends(get_db
         return schedule
     return JSONResponse(status_code=404, content={"message": "Schedule not found"})
 
+@app.get("/schedules/user/{user_id}", summary="Получить все расписания пользователя", response_model=list[ScheduleRead])
+async def get_user_schedules(user_id: uuid.UUID, db: Session = Depends(get_db)) -> typing.List[ScheduleRead]:
+    schedules = crud.get_schedules_by_user_id(user_id, db)
+    if schedules:
+        return schedules
+    return JSONResponse(status_code=404, content={"message": "Schedules not found for this user"})
+
 @app.patch("/schedules/{schedule_id}", summary='Обновляет информацию о расписании', response_model=ScheduleRead)
 async def update_schedule(schedule_id: uuid.UUID, schedule: ScheduleUpdate, db: Session = Depends(get_db)) -> ScheduleRead:
     updated = crud.update_schedule(schedule_id, schedule, db)

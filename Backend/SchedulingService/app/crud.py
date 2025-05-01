@@ -95,6 +95,12 @@ def get_schedule(schedule_id: uuid.UUID, db: Session) -> typing.Optional[Schedul
     """
     return db.query(Schedule).filter(Schedule.id == schedule_id).first()
 
+def get_schedules_by_user_id(user_id: uuid.UUID, db: Session) -> typing.List[ScheduleRead]:
+    """
+    Получить все расписания по ID пользователя
+    """
+    return db.query(Schedule).filter(Schedule.user_id == user_id).all()
+
 
 def update_schedule(schedule_id: uuid.UUID, schedule: ScheduleUpdate, db: Session) -> typing.Optional[ScheduleRead]:
     """
