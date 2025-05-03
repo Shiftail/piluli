@@ -1,12 +1,12 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from .database import DB_INITIALIZER
-from .schemas import ScheduleCreate,ScheduleUpdate,ScheduleRead
+from .schemas import ScheduleCreate, ScheduleUpdate, ScheduleRead
 from . import crud
 from . import config
-import typing
 import uuid
+import typing
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.logger import logger
 
@@ -21,6 +21,7 @@ app = FastAPI(
     version='0.0.1',
     title='Schedules Management Service'
 )
+
 def get_db():
     db = SessionLocal()
     try:
@@ -30,7 +31,10 @@ def get_db():
 
 @app.post("/schedules", status_code=201, response_model=ScheduleRead, summary='Добавляет расписание для лекарства')
 async def create_schedule(schedule: ScheduleCreate, db: Session = Depends(get_db)) -> ScheduleRead:
-    return crud.create_schedule(db=db, schedule=schedule)
+    try:
+        return crud.create_schedule(db=db, schedule=schedule)
+    except HTTPException as e:
+        raise e
 
 @app.get("/schedules", summary='Возвращает список расписаний', response_model=list[ScheduleRead])
 async def get_all_schedules(db: Session = Depends(get_db), skip: int = 0, limit: int = 100) -> typing.List[ScheduleRead]:
@@ -62,4 +66,3 @@ async def delete_schedule(schedule_id: uuid.UUID, db: Session = Depends(get_db))
     if crud.delete_schedule(schedule_id, db):
         return JSONResponse(status_code=200, content={"message": "Schedule successfully deleted"})
     return JSONResponse(status_code=404, content={"message": "Schedule not found"})
-
