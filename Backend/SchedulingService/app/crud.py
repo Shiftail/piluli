@@ -1,36 +1,48 @@
 import typing
 import uuid
 from sqlalchemy.orm import Session
+from fastapi import HTTPException
 from .models import Schedule
 from .schemas import ScheduleCreate,ScheduleUpdate,ScheduleRead
 from datetime import datetime, timedelta
-
+import re
 from datetime import datetime, timedelta
 
 from datetime import datetime, timedelta
+
+def validate_time_format(time_str: str) -> bool:
+    """Проверка, что время в правильном формате (HH:MM)"""
+    try:
+        datetime.strptime(time_str, "%H:%M")
+        return True
+    except ValueError:
+        return False
 
 def generate_schedule(start_schedule: str, frequency: int, interval: float, start_datetime: datetime, end_datetime: datetime):
+    if not validate_time_format(start_schedule):
+        raise HTTPException(status_code=400, detail="Invalid time format for 'start_schedule'. Please enter time in 'HH:MM' format.")
+
+    if frequency <= 0:
+        raise HTTPException(status_code=400, detail="'frequency' must be greater than 0.")
+
+    if interval <= 0:
+        raise HTTPException(status_code=400, detail="'interval' must be greater than 0.")
+
     schedule = []
     start_time = datetime.strptime(start_schedule, "%H:%M")
     current_time = start_time
 
-    # Период с начала до конца
     current_day = start_datetime.date()
     end_day = end_datetime.date()
 
     while current_day <= end_day:
         day_schedule = []
         for _ in range(frequency):
-            # Рассчитываем время конца приёма
             end_time = current_time + timedelta(minutes=15)
-            
-            # Форматируем дату и время в ISO-формате с корректной датой для каждого интервала
             day_schedule.append({
                 "start": current_time.replace(year=current_day.year, month=current_day.month, day=current_day.day).strftime("%Y-%m-%dT%H:%M:%S"),
                 "end": end_time.replace(year=current_day.year, month=current_day.month, day=current_day.day).strftime("%Y-%m-%dT%H:%M:%S")
             })
-            
-            # Переход к следующему интервалу
             current_time = end_time + timedelta(hours=interval)
 
         schedule.append({
@@ -38,18 +50,18 @@ def generate_schedule(start_schedule: str, frequency: int, interval: float, star
             "appointments": day_schedule
         })
 
-        # Переход на следующий день
         current_day += timedelta(days=1)
         current_time = start_time
 
     return schedule
 
-
-
 def create_schedule(db: Session, schedule: ScheduleCreate) -> ScheduleRead:
-    """
-    Создание нового расписания для лекарства.
-    """
+    """Создание нового расписания для лекарства."""
+    # Проверка на уникальность имени лекарства
+    existing_schedule = db.query(Schedule).filter(Schedule.name_drug == schedule.name_drug).first()
+    if existing_schedule:
+        raise HTTPException(status_code=400, detail=f"Schedule for drug '{schedule.name_drug}' already exists.")
+
     # Генерация расписания
     schedule_times = generate_schedule(
         start_schedule=schedule.start_schedule,
@@ -72,7 +84,7 @@ def create_schedule(db: Session, schedule: ScheduleCreate) -> ScheduleRead:
         end_datetime=schedule.end_datetime,
         start_schedule=schedule.start_schedule,
         is_active=schedule.is_active,
-        schedule_times=schedule_times  # Добавляем сгенерированное расписание
+        schedule_times=schedule_times
     )
     
     db.add(db_schedule)
