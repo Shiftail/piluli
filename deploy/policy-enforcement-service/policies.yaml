@@ -1,0 +1,63 @@
+services:
+    - name: user-service
+      entrypoint: http://user-service:5002/
+    - name: scheduling-service
+      entrypoint: http://scheduling-service:5001/
+      inject_token_in_swagger: True
+    - name: drug-service
+      entrypoint: http://drug-service:5000/
+      inject_token_in_swagger: True
+model: |
+    [request_definition]
+    r = sub, obj, act
+    
+    [policy_definition]
+    p = sub, obj, act
+    
+    [policy_effect]
+    e = some(where (p.eft == allow))
+    
+    [matchers]
+    m = eval(p.sub) && keyMatch(r.obj, p.obj) && regexMatch(r.act, p.act)
+policies:
+    - service: user-service
+      resource: /auth/*
+      methods: POST
+      white_list: true
+    - service: user-service
+      resource: /users/me
+      methods: (GET)|(PATCH)
+      rule: r.sub.is_superuser == False
+    - service: user-service
+      resource: /users/*
+      methods: (GET)|(POST)|(PATCH)|(DELETE)
+      rule: r.sub.is_superuser == True
+
+    - service: drug-service
+      resource: /drugs
+      methods: (GET)|(PUT)|(DELETE)|(PATCH)|(POST)
+      rule: r.sub.is_superuser == True
+    - service: drug-service
+      resource: /drugs/*
+      methods: (GET)|(PUT)|(DELETE)|(PATCH)|(POST)
+      rule: r.sub.is_superuser == True
+    - service: scheduling-service
+      resource: /schedules
+      methods: (GET)|(PUT)|(DELETE)|(PATCH)|(POST)
+      rule: r.sub.is_superuser == True
+    - service: scheduling-service
+      resource: /schedules/*
+      methods: (GET)|(PUT)|(DELETE)|(PATCH)|(POST)
+      rule: r.sub.is_superuser == True
+    
+    - service: scheduling-service
+      resource: /schedules
+      methods: POST
+      rule: r.sub.is_superuser == False
+    - service: scheduling-service
+      resource: /schedules/*
+      methods: (PATCH)|(GET)
+      rule: r.sub.is_superuser == False
+ 
+    
+      

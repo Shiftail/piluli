@@ -1,5 +1,10 @@
-version: "3.8"
-
+volumes:
+  policy-enforcement-data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./policy-enforcement-service
 services:
   redis:
     image: redis:alpine
@@ -57,6 +62,7 @@ services:
       interval: 5s
       retries: 5
   user-service:
+    container_name: user-service
     build:
       context: ../Backend/UserService
       dockerfile: ./Dockerfile
@@ -75,6 +81,7 @@ services:
       Userdb:
         condition: service_healthy
   scheduling-service:
+    container_name: scheduling-service
     build:
       context: ../Backend/SchedulingService
       dockerfile: ./Dockerfile
@@ -90,6 +97,7 @@ services:
       Schedulingdb:
         condition: service_healthy
   drug-service:
+    container_name: drug-service
     build:
       context: ../Backend/MedicineService
       dockerfile: ./Dockerfile
@@ -105,14 +113,32 @@ services:
       Drugsdb:
         condition: service_healthy
   notification-service:
+    container_name: notification-service
     build:
       context: ../Backend/NotificationService
       dockerfile: ./Dockerfile
-    container_name: NotificationService
     depends_on:
       - redis
       - Schedulingdb
       - Userdb
+    networks:
+      - custom
+  policy-enforcement-service:
+    container_name: policy-enforcement-service
+    build:
+      context: ../Backend/PolicyService
+      dockerfile: ./Dockerfile
+    volumes:
+      - policy-enforcement-data:/mnt/
+    ports:
+    - "5003:5003"
+    environment:
+      JWT_SECRET: ${JWT_SECRET}
+      POLICIES_CONFIG_PATH: ${POLICIES_CONFIG_PATH}
+    depends_on:
+      - drug-service
+      - scheduling-service
+      - user-service
     networks:
       - custom
 networks:
