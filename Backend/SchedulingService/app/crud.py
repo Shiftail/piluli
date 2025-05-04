@@ -41,7 +41,8 @@ def generate_schedule(start_schedule: str, frequency: int, interval: float, star
             end_time = current_time + timedelta(minutes=15)
             day_schedule.append({
                 "start": current_time.replace(year=current_day.year, month=current_day.month, day=current_day.day).strftime("%Y-%m-%dT%H:%M:%S"),
-                "end": end_time.replace(year=current_day.year, month=current_day.month, day=current_day.day).strftime("%Y-%m-%dT%H:%M:%S")
+                "end": end_time.replace(year=current_day.year, month=current_day.month, day=current_day.day).strftime("%Y-%m-%dT%H:%M:%S"),
+                "done": False
             })
             current_time = end_time + timedelta(hours=interval)
 
@@ -54,6 +55,7 @@ def generate_schedule(start_schedule: str, frequency: int, interval: float, star
         current_time = start_time
 
     return schedule
+
 
 def create_schedule(db: Session, schedule: ScheduleCreate) -> ScheduleRead:
     """Создание нового расписания для лекарства."""
