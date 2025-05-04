@@ -141,6 +141,16 @@ services:
       - user-service
     networks:
       - custom
+  bot_tg:
+    container_name: bot_tg
+    build:
+      context: ../Backend/bot_pulling
+      dockerfile: ./Dockerfile
+    environment:
+      BOT_TOKEN: ${BOT_TOKEN}
+      WEBAPP_URL: ${WEBAPP_URL}
+    networks:
+      - custom
 networks:
   custom:
     driver: bridge
