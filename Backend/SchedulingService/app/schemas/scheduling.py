@@ -14,7 +14,7 @@ class ScheduleBase(BaseModel):
     end_datetime: datetime  # Дата окончания приёма
     start_schedule: str  # Начало расписания (например, "08:30")
     is_active: bool = True  # Активность расписания
-    schedule_times: Optional[List[dict]] = None  # JSON для хранения расписания, например, список времен начала и конца приёма
+    # schedule_times: Optional[List[dict]] = None  # JSON для хранения расписания, например, список времен начала и конца приёма
 
     class Config:
         from_attributes = True
@@ -30,5 +30,6 @@ class ScheduleUpdate(ScheduleBase):
 
 class ScheduleRead(ScheduleBase):
     id: UUID4 
+    schedule_times: Optional[List[dict]]
     class Config:
         from_attributes = True
