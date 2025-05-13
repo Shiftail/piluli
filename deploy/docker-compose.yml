@@ -158,23 +158,23 @@ services:
       WEBAPP_URL: ${WEBAPP_URL}
     networks:
       - custom
-  nginx:
-    image: nginx:alpine
-    container_name: nginx
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/certs:/etc/nginx/certs:ro
-      - ../frontend:/usr/share/nginx/html:ro
-      - /etc/letsencrypt:/etc/letsencrypt:ro
-    env_file:
-      - .env
-    depends_on:
-      - policy-enforcement-service
-    networks:
-      - custom
+  # nginx:
+  #   image: nginx:alpine
+  #   container_name: nginx
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+  #     - ./nginx/certs:/etc/nginx/certs:ro
+  #     - ../frontend:/usr/share/nginx/html:ro
+  #     - /etc/letsencrypt:/etc/letsencrypt:ro
+  #   env_file:
+  #     - .env
+  #   depends_on:
+  #     - policy-enforcement-service
+  #   networks:
+  #     - custom
 
 
 networks:
